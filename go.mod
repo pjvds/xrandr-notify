@@ -1,4 +1,4 @@
-module github.com/pjvds/randrnotify
+module github.com/pjvds/randr-notify
 
 go 1.15
 
