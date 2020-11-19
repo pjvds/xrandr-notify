@@ -1,0 +1,10 @@
+changelog_path = "CHANGELOG.md"
+pre_bump_hooks = []
+post_bump_hooks = [
+  "git push",
+  "git push origin %version"
+]
+
+authors = [{ signature = "Pieter Joost van de Sande", username = "pjvds"}]
+
+[commit_types]
