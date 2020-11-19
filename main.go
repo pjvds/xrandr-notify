@@ -9,6 +9,7 @@ import (
 	"github.com/BurntSushi/xgb"
 	"github.com/BurntSushi/xgb/randr"
 	"github.com/BurntSushi/xgb/xproto"
+	"github.com/urfave/cli/v2"
 )
 
 type Batch struct {
@@ -17,72 +18,80 @@ type Batch struct {
 
 func main() {
 	log := log.New(os.Stderr, "", log.LstdFlags)
-
-	x, err := xgb.NewConn()
-	if err != nil {
-		log.Fatal(err.Error())
-		return
-	}
-
-	if err := randr.Init(x); err != nil {
-		log.Fatal(err.Error())
-		return
-	}
-
-	// Get the root window on the default screen.
-	root := xproto.Setup(x).DefaultScreen(x).Root
-
-	// Tell RandR to send us events.
-	if err := randr.SelectInputChecked(x, root,
-		randr.NotifyMaskScreenChange|
-			randr.NotifyMaskCrtcChange|
-			randr.NotifyMaskOutputChange|
-			randr.NotifyMaskOutputProperty).Check(); err != nil {
-		log.Fatal(err.Error())
-		return
-	}
-
-	encoder := json.NewEncoder(os.Stdout)
-	events := make(chan xgb.Event)
-
-	// Write x events to channel
-	go func() {
-		for {
-			e, err := x.WaitForEvent()
+	app := &cli.App{
+		Name: "randr-notify",
+		Action: func(c *cli.Context) error {
+			x, err := xgb.NewConn()
 			if err != nil {
-				log.Fatal(err.Error())
-				return
+				return cli.Exit(err.Error(), 100)
 			}
 
-			events <- e
-		}
-	}()
+			if err := randr.Init(x); err != nil {
+				log.Fatal(err.Error())
+				return cli.Exit(err.Error(), 101)
+			}
 
-	// Monitor x events channel
-	for e := range events {
-		batch := Batch{
-			Events: []xgb.Event{
-				e,
-			},
-		}
+			// Get the root window on the default screen.
+			root := xproto.Setup(x).DefaultScreen(x).Root
 
-		// accumulate events before write them as json output
-	loop:
-		for {
-			select {
-			case e, ok := <-events:
-				if !ok {
-					break
+			// Tell RandR to send us events.
+			if err := randr.SelectInputChecked(x, root,
+				randr.NotifyMaskScreenChange|
+					randr.NotifyMaskCrtcChange|
+					randr.NotifyMaskOutputChange|
+					randr.NotifyMaskOutputProperty).Check(); err != nil {
+				return cli.Exit(err.Error(), 102)
+			}
+
+			encoder := json.NewEncoder(os.Stdout)
+			events := make(chan xgb.Event)
+
+			// Write x events to channel
+			go func() {
+				for {
+					e, err := x.WaitForEvent()
+					if err != nil {
+						log.Fatal(err.Error())
+						return
+					}
+
+					events <- e
+				}
+			}()
+
+			// Monitor x events channel
+			for e := range events {
+				batch := Batch{
+					Events: []xgb.Event{
+						e,
+					},
 				}
 
-				batch.Events = append(batch.Events, e)
-			case <-time.After(1):
-				break loop
-			}
-		}
+				// accumulate events before write them as json output
+			loop:
+				for {
+					select {
+					case e, ok := <-events:
+						if !ok {
+							break
+						}
 
-		if err := encoder.Encode(batch); err != nil {
-			log.Fatal(err)
-		}
+						batch.Events = append(batch.Events, e)
+					case <-time.After(1):
+						break loop
+					}
+				}
+
+				if err := encoder.Encode(batch); err != nil {
+					log.Fatal(err)
+				}
+			}
+
+			return nil
+		},
+	}
+
+	if err := app.Run(os.Args); err != nil {
+		log.Fatal(err)
 	}
 }
