@@ -32,7 +32,7 @@ func main() {
 	// Get the root window on the default screen.
 	root := xproto.Setup(x).DefaultScreen(x).Root
 
-	// Tell RandR to send us events. (I think these are all of them, as of 1.3.)
+	// Tell RandR to send us events.
 	if err := randr.SelectInputChecked(x, root,
 		randr.NotifyMaskScreenChange|
 			randr.NotifyMaskCrtcChange|
