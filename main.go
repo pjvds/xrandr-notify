@@ -20,6 +20,14 @@ func main() {
 	log := log.New(os.Stderr, "", log.LstdFlags)
 	app := &cli.App{
 		Name: "randr-notify",
+		Flags: []cli.Flag{
+			&cli.DurationFlag{
+				Name:    "accumulation-timeout",
+				Aliases: []string{"a"},
+				Usage:   "The maximum duration to wait to add another event to the batch.",
+				Value:   1 * time.Second,
+			},
+		},
 		Action: func(c *cli.Context) error {
 			x, err := xgb.NewConn()
 			if err != nil {
@@ -77,7 +85,7 @@ func main() {
 						}
 
 						batch.Events = append(batch.Events, e)
-					case <-time.After(1):
+					case <-time.After(c.Duration("accumulation-timeout")):
 						break loop
 					}
 				}
