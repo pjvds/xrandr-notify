@@ -1,3 +1,4 @@
+github = "https://github.com/pjvds/randr-notify"
 changelog_path = "CHANGELOG.md"
 pre_bump_hooks = []
 post_bump_hooks = [
