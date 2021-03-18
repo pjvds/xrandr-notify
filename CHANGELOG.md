@@ -2,6 +2,27 @@
 All notable changes to this project will be documented in this file. See [conventional commits](https://www.conventionalcommits.org/) for commit guidelines.
 
 - - -
+## 0.2.0 - 2021-03-18
+
+
+### Features
+
+[256e5f](https://github.com/pjvds/randr-notify/commit/256e5f0d765148fa9356a8646eeb022a8fb69274) - add flag to set accumulation timeout - Pieter Joost
+
+[e4d133](https://github.com/pjvds/randr-notify/commit/e4d133f99f7ecf5023617d26f05e3a613dd91b9d) - exit codes represent point of error - Pieter Joost
+
+
+### Documentation
+
+[18c1de](https://github.com/pjvds/randr-notify/commit/18c1de46405f7df11504b2334fe5aa132772fc8b) - add example to README - [pjvds](https://github.com/pjvds)
+
+
+### Miscellaneous Chores
+
+[93ef29](https://github.com/pjvds/randr-notify/commit/93ef292c9f22c01fc8b1305e870d95aa78a7e755) - generate changelog links - Pieter Joost
+
+
+- - -
 ## 0.1.0 - 2020-11-19
 
 
